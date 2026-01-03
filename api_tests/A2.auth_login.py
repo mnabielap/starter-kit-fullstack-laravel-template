@@ -1,29 +1,30 @@
 import sys
 import os
-
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-import utils
+from utils import send_and_print, BASE_URL, save_config
 
-url = f"{utils.BASE_URL}/auth/login"
-output_file = f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
+print("--- LOGGING IN (AS ADMIN) ---")
 
-# Credentials (from DatabaseSeeder / Tinker)
+url = f"{BASE_URL}/auth/login"
+
+# Using default admin credentials to ensure we have permissions for B* scripts
 payload = {
-    "email": "admin@example.com",
-    "password": "password123"
+    "email": "admin@example.com", 
+    "password": "password123" 
 }
 
-response = utils.send_and_print(
-    url,
+response = send_and_print(
+    url=url,
     method="POST",
     body=payload,
-    output_file=output_file
+    output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
 
-# Save tokens if successful
 if response.status_code == 200:
     data = response.json()
-    if 'tokens' in data:
-        utils.save_config("access_token", data['tokens']['access']['token'])
-        utils.save_config("refresh_token", data['tokens']['refresh']['token'])
-        print("[SUCCESS] Tokens saved to secrets.json")
+    # Save tokens to secrets.json for subsequent requests
+    save_config("accessToken", data['tokens']['access']['token'])
+    save_config("refreshToken", data['tokens']['refresh']['token'])
+    print(">>> Login successful. Access and Refresh tokens saved.")
+else:
+    print(">>> Login Failed.")

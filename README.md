@@ -272,10 +272,10 @@ python A1.auth_register.py
 python A2.auth_login.py
 
 # Refresh Token
-python A3.auth_refresh_tokens.py
+python A3.auth_refresh.py
 
 # Logout
-python A4.auth_logout.py
+python A6.auth_logout.py
 ```
 
 **2. User Management (Group B):**

@@ -1,41 +1,41 @@
 import sys
 import os
-import random
-import string
-
+import time
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-import utils
+from utils import send_and_print, BASE_URL, load_config, save_config
 
-# Generate random user
-random_str = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
-email = f"newuser_{random_str}@test.com"
+print("--- CREATE USER (ADMIN) ---")
 
-url = f"{utils.BASE_URL}/users"
-output_file = f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
+token = load_config("accessToken")
+if not token:
+    print("Error: No access token. Run A2.auth_login.py first.")
+    sys.exit(1)
 
-# Load Access Token (Admin)
-token = utils.load_config("access_token")
-headers = {"Authorization": f"Bearer {token}"} if token else {}
+# Unique email
+unique_id = int(time.time())
+email = f"created_by_admin_{unique_id}@example.com"
 
+url = f"{BASE_URL}/users"
+headers = {
+    "Authorization": f"Bearer {token}"
+}
 payload = {
-    "name": f"Test User {random_str}",
+    "name": "Created Via Python",
     "email": email,
-    "password": "Password123",
+    "password": "password123",
     "role": "user"
 }
 
-response = utils.send_and_print(
-    url,
+response = send_and_print(
+    url=url,
     headers=headers,
     method="POST",
     body=payload,
-    output_file=output_file
+    output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
 
-# Save User ID for other tests
 if response.status_code == 201:
     data = response.json()
-    user_id = data.get("id")
-    if user_id:
-        utils.save_config("test_user_id", user_id)
-        print(f"[SUCCESS] Created User ID {user_id} saved to config.")
+    # Save this ID to use in Get/Update/Delete scripts
+    save_config("target_user_id", data['id'])
+    print(f">>> User created with ID {data['id']}. ID saved to secrets.json for testing B3/B4/B5.")

@@ -12,6 +12,7 @@ use App\Http\Resources\AuthTokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\UserService;
+use App\Enums\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Annotations as OA;
@@ -47,7 +48,10 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = $this->userService->createUser($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['role'] = Role::USER;
+
+        $user = $this->userService->createUser($validatedData);
         $data = $this->authService->generateAuthTokens($user);
         
         return response()->json([

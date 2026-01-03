@@ -1,38 +1,34 @@
 import sys
 import os
-import random
-import string
-
+import time
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-import utils
+from utils import send_and_print, BASE_URL, save_config
 
-# Generate random email to avoid unique constraint error
-random_str = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-email = f"user_{random_str}@example.com"
-password = "Password123"
+# Generate a unique email to avoid conflict
+unique_id = int(time.time())
+email = f"testuser_{unique_id}@example.com"
 
-url = f"{utils.BASE_URL}/auth/register"
-output_file = f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
+print(f"--- REGISTERING NEW USER: {email} ---")
+
+url = f"{BASE_URL}/auth/register"
 
 payload = {
-    "name": f"User {random_str}",
+    "name": "Test User Automator",
     "email": email,
-    "password": password
+    "password": "password123",
+    "role": "user",
 }
 
-print(f"Registering with: {email} / {password}")
-
-response = utils.send_and_print(
-    url,
+response = send_and_print(
+    url=url,
     method="POST",
     body=payload,
-    output_file=output_file
+    output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
 
-# Save tokens if successful
+# Optional: Save tokens if you want to use this user immediately
 if response.status_code == 201:
     data = response.json()
-    if 'tokens' in data:
-        utils.save_config("access_token", data['tokens']['access']['token'])
-        utils.save_config("refresh_token", data['tokens']['refresh']['token'])
-        print("[SUCCESS] Tokens saved to secrets.json")
+    save_config("accessToken", data['tokens']['access']['token'])
+    save_config("refreshToken", data['tokens']['refresh']['token'])
+    print(">>> Registration successful. Tokens saved to secrets.json.")
